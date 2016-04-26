@@ -18,7 +18,7 @@ pause <- function(s=NULL) {
   readline(prompt = "Pause. Press <Enter> to continue...")
 }
 
-dbuser = 'yuru'; dbpass = 'yuru123'; db.name = 'APEC'; dbhost = 'localhost'
+dbuser = ''; dbpass = ''; db.name = 'APEC'; dbhost = 'localhost'
 
 load.data <- function(sqlstr = NULL) {
   con = dbConnect(MySQL(), user=dbuser, password=dbpass, dbname=db.name, host=dbhost)
