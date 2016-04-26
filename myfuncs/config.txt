@@ -1,0 +1,41 @@
+[mysql]
+host: achtung10
+username: invis
+password: bE9poC4jIbaM19Dw19R
+dbname: invis
+
+[Sunlight]
+apikey: 434b8198f63f4a658a90818cf2f38467
+
+[VoteSmart]
+apikey: 5adeffb75404e38f20caf891619398ba
+
+[Daylife]
+Accesskey0: 8befa1cf0a7c0291613242235638a662
+Shared-Secret0: 2e548ef751397c653752057adcff0c9f
+Accesskey: 06f9e654218702ce282d9503a4c3daa2
+Shared-Secret: 256fbb9991be16b5eb329165509a769e
+
+[Twitter]    
+usernameX: tweet_data
+passwordX: passw0rd
+username: rhodiuslin
+password: nosurrender
+consumer_key: MClqHdr8tqBH1KzAAHV5LA
+consumer_secret: EhlvIP8E5IKDpKwkFnjn3NB2AXouWKYaJxdI43neSrM
+access_token: 6802182-yPnaGYY9qOAWPkgmdiJnud1HoP7eTMpU9AA4eqf0sI
+access_token_secret: IHPyrvM4CchbdyHLRahlJsjyDyEGLZl0aDnL80og0
+
+[Gmail]
+username: yuru.collabnet@gmail.com
+password: funtocoop
+
+[Local]
+outputpath: ../output
+datapath: ../data
+logfile: ../output/wgetsites.log
+logfile1: ../output/homepage.log
+
+[Param]
+simulate: 0
+

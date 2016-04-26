@@ -1,0 +1,32 @@
+\documentclass[4pt]{report}
+
+%table created by csv2latex.py ({{author}}, {{date}})
+\begin{document}
+\begin{table}
+    \centering {{font_spec}}
+    \begin{tabular}{ {{alignment_str}} }
+    \hline
+    {% for col in head %}
+        \textbf{ {{col}} } 
+        {% if not forloop.last %}
+           &
+        {% endif %}
+    {% endfor %} 
+    \\
+    \hline
+    {% for row in  table %}
+        {% for cell in row %}
+            {{cell}}
+            {% if not forloop.last %} 
+               &
+            {% endif %}
+        {% endfor %}
+        \\
+    {% endfor %}
+    \hline
+    \end{tabular}
+    \caption{ {{table_caption}} }
+    \label{ {{table_label}} }
+\end{table}
+
+\end{document}  

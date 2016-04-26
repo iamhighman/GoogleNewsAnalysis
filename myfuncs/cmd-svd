@@ -1,0 +1,145 @@
+#! /usr/bin/Rscript
+# cmd-svd.R - do svd on a given input matrix in sparse format, output three matrices
+# @author: Yu-Ru Lin
+# @date: Nov 5, 2013
+
+readme = "
+Usage: $ cmd-svd [options] [-[-file|f] <filename>]
+       SVD on a sparse matrix given by the <filename>.
+Examples:
+    $ cmd-svd -f testmat.txt -i                   # Do SVD on the given matrix
+    $ cmd-svd -f testmat.txt -i -k 5 -u -o test   # Do SVD on the given matrix, k=5, only output U matrix to testU.mtx
+Options: 
+    -h | --help                : Print help information.
+    -i | --info                : Print detailed information.
+    -f | --file <filename>     : Set the input matrix file.
+    -o | --output <filename>   : Set the name of output files. (Default: U.mtx, S.mtx, V.mtx)
+                               : The output files are in Matrix Market format. 
+                               : See http://math.nist.gov/MatrixMarket/formats.html
+    -u | --outU                : Only output matrix U to file. (Default: out put three matrices)
+    -v | --outV                : Only output matrix V to file. (Default: out put three matrices)
+    -k | --rank <K>            : Set the rank for SVD (Default: k=3).
+"
+## set a prior desired mirror to avoid evoking Tcl/Tk interface
+options(repos='http://r.iq.harvard.edu') # USA
+options(verbose=F,echo=F) 
+liblist = c('utils','getopt','Matrix','MASS','irlba')
+spath = dirname(Sys.which('cmd-svd')) # get the path of current script
+
+## a set of utility functions 
+is.installed <- function(mypkg) is.element(mypkg, installed.packages()[,1]) 
+printf <- function(...) cat(sprintf(...))
+has.str <- function(S,s) grepl(s,S) # return TRUE if S contains s
+pause <- function(s=NULL) {
+  if (!is.null(s)) cat(s,'\n')
+  readline(prompt = "Pause. Press <Enter> to continue...")
+}
+
+# check required libraries; install non-installed libraries for the first time
+for (lib in liblist) {
+  #   cat('checking package',lib,'\n')
+  if (!is.installed(lib)) {
+    cat('installing package',lib,'\n')
+    res = try(install.packages(lib))
+    if (inherits(res, "try-error")) q(status=1) else q()
+  }
+}
+suppressWarnings(suppressPackageStartupMessages( require(getopt,quietly=T) ))
+
+usage <- function() cat(readme,sep='\n')
+
+do.svd.main <- function() {
+  #get options, using the spec as defined by the enclosed list.
+  #we read the options from the default: commandArgs(TRUE).
+  opt = getopt(c(
+    'info', 'i', 2, "integer",
+    'help', 'h', 0, "logical",
+    'file', 'f', 1, "character",
+    'rank','k', 1, 'integer',
+    'output','o',1,'character',
+    'outU', 'u', 2, "integer",
+    'outV', 'v', 2, "integer"
+  ));
+  #   print(opt)
+  #help was asked for.
+  if ( !is.null(opt$help) ) {
+    #get the script name (only works when invoked with Rscript).
+    #self = commandArgs()[1];
+    usage()
+    q(status=1);
+  }
+  
+  #set some reasonable defaults for the options that are needed,
+  #but were not specified.
+  #   if ( is.null(opt$file ) ) { opt$file = NULL }
+  if ( is.null(opt$info ) ) { opt$info = FALSE }
+  if ( is.null(opt$rank ) ) { opt$rank = 3 }
+  if ( is.null(opt$output ) ) { opt$output = '' }
+  if ( is.null(opt$outU ) ) { opt$outU = F }
+  if ( is.null(opt$outV ) ) { opt$outV = F }
+  opt$ufile = sprintf('%sU.mtx',opt$output)
+  opt$vfile = sprintf('%sV.mtx',opt$output)
+  opt$sfile = sprintf('%sS.mtx',opt$output)
+  
+  #print some progress messages to stderr, if requested.
+  #   if ( opt$verbose ) { write("writing...",stderr()); }
+  # print(opt)
+  #do some operation based on user input.
+  
+  S = do.svd(opt)
+  cat("## end ##\n");
+  
+  #signal success and exit.
+  q(status=0);  
+}
+
+do.svd.init <- function(liblist=c(),seed='12345') {
+  suppressPackageStartupMessages( require(MASS,quietly=T) )  
+  suppressPackageStartupMessages( require(Matrix,quietly=T) )  
+  suppressPackageStartupMessages( require(irlba,quietly=T) )  
+  set.seed(seed)
+}
+
+load.matrix <- function(ifilename, verbose=F, opt=NULL) {
+  if (!is.null(opt)) verbose = opt$info
+  if (verbose) cat('loading matrix from ',ifilename,'... ',sep='')
+  x = scan(ifilename,what=list(integer(),integer(),numeric()))
+  M = sparseMatrix(i=x[[1]]+1,j=x[[2]]+1,x=x[[3]])
+  if (verbose) cat('dim=(',dim(M),'), mem: ',object.size(M),', nnz:',nnzero(M),'\n')
+  M
+}
+
+do.ssvd <- function(M,K=3,verbose=F,opt=NULL) {
+  if (!is.null(opt)) verbose = opt$info
+  if (verbose) cat('ssvd:',dim(M),'>> output 3 matrices, dim: ')
+  S = irlba(M,nu=K,nv=K)
+  if (verbose) {
+    cat(length(S$d),',',dim(S$u),',',dim(S$v),'\n')
+    cat('singular values:',S$d,'\n')
+  }
+  S
+}
+
+do.svd <- function(opt) {
+  if (opt$info) printf('## do svd ##\n')
+  do.svd.init()
+  S = NULL
+  if (is.null(S)) {
+    M = load.matrix(opt$file,opt=opt)
+    S = do.ssvd(M,opt$rank,opt=opt)
+  }
+  if (opt$outU) {
+    writeMM(as(S$u, "sparseMatrix"),opt$ufile); if (opt$info) cat('write to',opt$ufile,'\n')    
+  } else if (opt$outV) {
+    writeMM(as(S$v, "sparseMatrix"),opt$vfile); if (opt$info) cat('write to',opt$vfile,'\n')    
+  } else {
+    writeMM(as(S$u, "sparseMatrix"),opt$ufile); if (opt$info) cat('write to',opt$ufile,'\n')
+    writeMM(as(S$v, "sparseMatrix"),opt$vfile); if (opt$info) cat('write to',opt$vfile,'\n')
+    writeMM(as(S$d, "sparseMatrix"),opt$sfile); if (opt$info) cat('write to',opt$sfile,'\n')    
+  }
+  S
+}
+
+
+
+suppressWarnings(do.svd.main())
