@@ -1,5 +1,4 @@
 # load_apec.R - load and explore the apec data
-# @author: Yu-Ru Lin
 # @date: 2014-01-27
 
 Sys.setenv(NOAWT = "true")  ## work around for the stemmer issue
