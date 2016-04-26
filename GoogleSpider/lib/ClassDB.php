@@ -5,7 +5,7 @@ class DB{
       $this->config();
    }
    function config(){
-      $this->link = mysql_pconnect('localhost', 'root', 'imna1234tku*') or
+      $this->link = mysql_pconnect('localhost', '', '') or
       die("mysql_connect() failed.");
       mysql_select_db("Google", $this->link) or
       die("mysql_select_db() failed.");  	
